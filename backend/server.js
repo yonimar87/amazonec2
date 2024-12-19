@@ -5,17 +5,23 @@ const path = require("path"); // Add this line to import 'path' module
 const app = express();
 const PORT = 5001;
 
-// Endpoint to fetch metadata (region and AZ)
 app.get("/metadata", async (req, res) => {
   try {
-    // Fetch the availability zone from EC2 metadata
+    // Get metadata token
+    const tokenResponse = await axios.put('http://169.254.169.254/latest/api/token', null, {
+      headers: { 'X-aws-ec2-metadata-token-ttl-seconds': '21600' }
+    });
+    const metadataToken = tokenResponse.data;
+
+    // Fetch the availability zone with the token in the header
     const AZ_URL = "http://169.254.169.254/latest/meta-data/placement/availability-zone";
-    const response = await axios.get(AZ_URL);
-    console.log('response ', response)
+    const response = await axios.get(AZ_URL, {
+      headers: {
+        'X-aws-ec2-metadata-token': metadataToken
+      }
+    });
 
     const availabilityZone = response.data;
-
-    // Extract region from the availability zone (e.g., "us-east-1a" -> "us-east-1")
     const region = availabilityZone.slice(0, -1);
 
     res.json({ region, availabilityZone });
@@ -24,6 +30,7 @@ app.get("/metadata", async (req, res) => {
     res.status(500).json({ error: "Unable to fetch metadata" });
   }
 });
+
 
 // Serve React frontend
 app.use(express.static(path.join(__dirname, '../build')));
