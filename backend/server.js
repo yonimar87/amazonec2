@@ -11,6 +11,8 @@ app.get("/metadata", async (req, res) => {
     // Fetch the availability zone from EC2 metadata
     const AZ_URL = "http://169.254.169.254/latest/meta-data/placement/availability-zone";
     const response = await axios.get(AZ_URL);
+    console.log('response ', response)
+
     const availabilityZone = response.data;
 
     // Extract region from the availability zone (e.g., "us-east-1a" -> "us-east-1")
