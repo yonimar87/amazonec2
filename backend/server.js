@@ -1,5 +1,6 @@
 const express = require("express");
 const axios = require("axios");
+const path = require("path"); // Add this line to import 'path' module
 
 const app = express();
 const PORT = 5001;
@@ -22,6 +23,15 @@ app.get("/metadata", async (req, res) => {
   }
 });
 
+// Serve React frontend
+app.use(express.static(path.join(__dirname, '../frontend/build')));
+
+// Catch-all handler to serve index.html for any other requests
+app.get('*', (req, res) => {
+  res.sendFile(path.join(__dirname, '../frontend/build', 'index.html'));
+});
+
+// Start the server
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
